@@ -34,8 +34,7 @@ namespace CourseWork
             try
             {
                 //var testConnection = SelectBuilders.GetScalar(DBconnection, "select 1").ToInt();
-                var testConnection = new SelectBuilder(DBconnection, "select 1").GetScalar().ToInt();
-                
+                var testConnection = new SelectBuilder(DBconnection, "select 1").GetScalar().ToInt();              
             }
             catch
             {

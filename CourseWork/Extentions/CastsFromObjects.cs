@@ -87,29 +87,4 @@
         }
 
     }
-
-    public static class ShowData
-    {
-        public static void Show(this List<object> data)
-        {
-            data.ForEach(obj => 
-            {
-                Console.WriteLine(obj ?? "null");
-            });
-        }
-
-        public static void Show<T>(this List<T> data)
-        {
-            var structure = typeof(T).GetFields().ToList();
-
-            foreach (var row in data)
-            {
-                foreach (var field in structure)
-                {
-                    Console.WriteLine(field.Name + ": " + typeof(T).GetField(field.Name).GetValue(row) ?? "null");
-                }
-                Console.WriteLine();
-            }
-        }
-    }
 }
