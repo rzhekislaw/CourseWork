@@ -5,10 +5,11 @@ using CourseWork.Extentions;
 
 namespace CourseWork
 {
-    class Caller
+    public class Caller
     {
         public const string Host = "localhost";
         public const string DataBase = "northwind";
+        public const string Schema = "public";
         public static void Main()
         {
             OnInitialize();

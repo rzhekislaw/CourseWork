@@ -353,7 +353,9 @@ namespace CourseWork.Tools
 
             for (int i = 0; i < constructor.GetParameters().Count(); i++)
             {
-                parameters[i] = reader.GetValue(reader.GetOrdinal(constructor.GetParameters()[i].Name));
+                var defaultValue = GetDefaultValue(constructor.GetParameters().ToArray()[i].ParameterType);
+
+                parameters[i] = reader.GetValue(reader.GetOrdinal(constructor.GetParameters()[i].Name)) == DBNull.Value ? defaultValue : reader.GetValue(reader.GetOrdinal(constructor.GetParameters()[i].Name));
             }
 
             var row = constructor.Invoke(parameters);
@@ -367,12 +369,21 @@ namespace CourseWork.Tools
 
             foreach (var field in typeof(T).GetFields())
             {
-                field.SetValue(row, reader.GetValue(reader.GetOrdinal(field.Name)));
+                var defaultFieldValue = GetDefaultValue(field.FieldType);
+
+                field.SetValue(row, reader.GetValue(reader.GetOrdinal(field.Name)) == DBNull.Value ? defaultFieldValue : reader.GetValue(reader.GetOrdinal(field.Name)));
             }
 
             return row;
         }
 
         #endregion
+
+        private T GetDefaultValue<T>(T type) where T : Type
+        {
+            var value = default(T);
+
+            return value;
+        }
     }
 }
