@@ -2,6 +2,7 @@
 using CourseWork.Tools;
 using CourseWork.NorthWind_Tables__Structs;
 using CourseWork.Extentions;
+using CourseWork.CRUD_on_Tasks;
 
 namespace CourseWork
 {
@@ -12,11 +13,39 @@ namespace CourseWork
         public const string Schema = "public";
         public static void Main()
         {
-            OnInitialize();
+            NpgsqlDataSource DBconnection = null;
+
+            string username = string.Empty;
+
+            while (DBconnection == null || username == string.Empty)
+            {
+                DBconnection = OnInitialize(out username);
+            }
+
+            do
+            {
+                Console.Clear();
+                Console.WriteLine("Enter \'q\' to exit, \'s\' to show all data, \'a\' to add new task");
+                var input = Console.ReadLine();
+                if (input?.ToUpper() == "Q")
+                {
+                    return;
+                }
+                if (input?.ToUpper() == "S")
+                {
+                    Crud.ShowExistingTasks(DBconnection, username);
+                }
+                if (input?.ToUpper() == "A")
+                {
+                    Crud.AddTask(DBconnection, username);
+                }
+            }
+            while (true);
         }
 
-        public static void OnInitialize()
+        public static NpgsqlDataSource OnInitialize(out string username)
         {
+            Console.Clear();
             Console.BackgroundColor = ConsoleColor.Black;
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("Login: ");
@@ -30,23 +59,26 @@ namespace CourseWork
             var user = new User() { Login = login, Password = password };
 
             var connection = $"Host={Host};Username={user.Login};Password={user.Password};Database={DataBase}";
-            using var DBconnection = NpgsqlDataSource.Create(connection);
+            var DBconnection = NpgsqlDataSource.Create(connection);
 
             try
             {
-                //var testConnection = SelectBuilders.GetScalar(DBconnection, "select 1").ToInt();
                 var testConnection = new SelectBuilder(DBconnection, "select 1").GetScalar().ToInt();              
             }
             catch
             {
                 Console.WriteLine("Authorization failure");
+                Console.WriteLine("Press any key to continue");
                 Console.ReadLine();
-                return;
+                DBconnection = null;
+                username = string.Empty;
+                return DBconnection;
             }
             Console.WriteLine($"Connected to {DataBase} as {user.Login}");
             Console.WriteLine("Press any key to continue");
             Console.ReadLine();
-            Console.Clear();
+            username = user.Login;
+            return DBconnection;
         }
     }
 }
