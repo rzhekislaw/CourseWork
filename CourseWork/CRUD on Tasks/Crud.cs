@@ -10,11 +10,11 @@ namespace CourseWork.CRUD_on_Tasks
         {
             Console.Clear();
 
-            new SelectBuilder(DBconnection, "select * from trello where board_user = @user", new Dictionary<string, object>() { { "user", username } }).GetObjects(new
+            new SelectBuilder(DBconnection, "select board, col_name, task_name, task_description, task_priority, task_comment from trello where board_user = @user", new Dictionary<string, object>() { { "user", username } }).GetObjects(new
             {
-                id = Guid.Empty,
+                //id = Guid.Empty,
                 board = string.Empty,
-                board_user = string.Empty,
+                //board_user = string.Empty,
                 col_name = string.Empty,
                 task_name = string.Empty,
                 task_description = string.Empty,
@@ -102,9 +102,13 @@ namespace CourseWork.CRUD_on_Tasks
                 Console.WriteLine("In case of skipping priority setting priority will be set to 1");
                 Console.WriteLine("Enter task priority: ");
                 var input = Console.ReadLine();
-                if (input != null && int.TryParse(input, out var parsed))
+                if (input != null)
                 {
-                    task_priority = parsed;
+                    if (int.TryParse(input, out var parsed))
+                    {
+                        task_priority = parsed;
+                        break;
+                    }
                     break;
                 }
                 if (input == null)
