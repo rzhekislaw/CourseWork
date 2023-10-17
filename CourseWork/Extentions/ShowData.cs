@@ -16,9 +16,21 @@
 
                 foreach (var field in structure)
                 {
-                    Console.Write($"{field.Name.PadLeft(10 + field.Name.Length, ' ').PadRight(20 + field.Name.Length, ' ')}|");
-                    separatorPositions.Add(field.Name.Length + 21 + (separatorPositions.Count == 0 ? 0 : separatorPositions.Max()));
-                    widths.Add(field.Name, field.Name.Length + 20);
+                    var columnWidth = 0;
+                    data.ForEach(row => 
+                    {
+                        var currentWidth = (typeof(T).GetField(field.Name).GetValue(row) ?? "null").ToString().Length;
+                        if (columnWidth < currentWidth)
+                        {
+                            columnWidth = currentWidth;
+                        }
+                    });
+
+                    columnWidth = Math.Max(columnWidth, field.Name.Length);
+
+                    Console.Write($"{field.Name.PadLeft(5 + (columnWidth + field.Name.Length) / 2, ' ').PadRight(10 + columnWidth, ' ')}|");
+                    separatorPositions.Add(columnWidth + 11 + (separatorPositions.Count == 0 ? 0 : separatorPositions.Max()));
+                    widths.Add(field.Name, columnWidth + 10);
                 }
                 Console.Write("\n");
                 AddSeparatorLine(separatorPositions);
@@ -44,9 +56,21 @@
 
                 foreach (var property in properties)
                 {
-                    Console.Write($"{property.Name.PadLeft(5 + property.Name.Length, ' ').PadRight(10 + property.Name.Length, ' ')}|");
-                    separatorPositions.Add(property.Name.Length + 11 + (separatorPositions.Count == 0 ? 0 : separatorPositions.Max()));
-                    widths.Add(property.Name, property.Name.Length + 10);
+                    var columnWidth = 0;
+                    data.ForEach(row =>
+                    {
+                        var currentWidth = (typeof(T).GetProperty(property.Name).GetValue(row) ?? "null").ToString().Length;
+                        if (columnWidth < currentWidth)
+                        {
+                            columnWidth = currentWidth;
+                        }
+                    });
+
+                    columnWidth = Math.Max(columnWidth, property.Name.Length);
+
+                    Console.Write($"{property.Name.PadLeft(5 + (columnWidth + property.Name.Length) / 2, ' ').PadRight(10 + columnWidth, ' ')}|");
+                    separatorPositions.Add(columnWidth + 11 + (separatorPositions.Count == 0 ? 0 : separatorPositions.Max()));
+                    widths.Add(property.Name, columnWidth + 10);
                 }
 
                 Console.Write("\n");
