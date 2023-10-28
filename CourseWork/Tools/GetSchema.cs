@@ -21,8 +21,8 @@ namespace CourseWork.Tools
 	 				numeric_precision_radix,
 	 				datetime_precision
 			 FROM information_schema.columns
-			 WHERE table_catalog = '{Caller.DataBase}'
-	 			  AND table_schema = '{Caller.Schema}'
+			 WHERE table_catalog = '{PublicConstants.DataBase}'
+	 			  AND table_schema = '{PublicConstants.Schema}'
 	 			  AND table_name = '{table}'
 			 ORDER BY ordinal_position";
 

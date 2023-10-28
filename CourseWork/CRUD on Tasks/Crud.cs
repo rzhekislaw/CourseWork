@@ -5,9 +5,19 @@ using CourseWork.NorthWind_Tables__Structs;
 
 namespace CourseWork.CRUD_on_Tasks
 {
-    public class Crud
+    public interface ICrud
     {
-        public static void ShowExistingTasks(NpgsqlDataSource DBconnection, string username)
+        void ShowExistingTasks(NpgsqlDataSource DBconnection, string username);
+        void AddTask(NpgsqlDataSource DBconnection, string username);
+
+        void UpdateTask(NpgsqlDataSource DBconnection, string username, Dictionary<string, object> SetValuesPairs, Dictionary<string, object> WhereValuesPairs);
+
+        void DeleteTask(NpgsqlDataSource DBconnection, string username, Dictionary<string, object> WhereValuesPairs);
+    }
+
+    public class Crud : ICrud
+    {
+        public void ShowExistingTasks(NpgsqlDataSource DBconnection, string username)
         {
             Console.Clear();
 
@@ -30,117 +40,25 @@ namespace CourseWork.CRUD_on_Tasks
             Console.ReadLine();
         }
 
-        public static void AddTask(NpgsqlDataSource DBconnection, string username)
+        public void AddTask(NpgsqlDataSource DBconnection, string username)
         {
-            string board = string.Empty;
-            do
-            {
-                Console.Clear();
-                Console.WriteLine("Enter board name to add task to: ");
-                var input = Console.ReadLine();
-                if (input != null)
-                {
-                    board = input;
-                    break;
-                }
-                Console.WriteLine("Wrong input");
-                Console.ReadLine();
-            }
-            while (true);
+            string board = Dialogs.InsertDialog("board").ToString();
 
-            string col_name = string.Empty;
-            do
-            {
-                Console.Clear();
-                Console.WriteLine("Enter column name to add task to: ");
-                var input = Console.ReadLine();
-                if (input != null)
-                {
-                    col_name = input;
-                    break;
-                }
-                Console.WriteLine("Wrong input");
-                Console.ReadLine();
-            }
-            while (true);
+            string col_name = Dialogs.InsertDialog("col_name").ToString();
 
-            string task_name = string.Empty;
-            do
-            {
-                Console.Clear();
-                Console.WriteLine("Enter task name: ");
-                var input = Console.ReadLine();
-                if (input != null)
-                {
-                    task_name = input;
-                    break;
-                }
-                Console.WriteLine("Wrong input");
-                Console.ReadLine();
-            }
-            while (true);
+            string task_name = Dialogs.InsertDialog("task_name").ToString();
 
-            string task_description = string.Empty;
-            do
-            {
-                Console.Clear();
-                Console.WriteLine("Enter task description: ");
-                var input = Console.ReadLine();
-                if (input != null)
-                {
-                    task_description = input;
-                    break;
-                }
-                Console.WriteLine("Wrong input");
-                Console.ReadLine();
-            }
-            while (true);
+            string task_description = Dialogs.InsertDialog("task_description").ToString();
 
-            int task_priority = 0;
-            do
+            int task_priority = Dialogs.InsertDialog("task_priority", 0, new string[]
             {
-                Console.Clear();
-                Console.WriteLine("Task priority has values constraint");
-                Console.WriteLine("Only values between 1 and 5 are allowed");
-                Console.WriteLine("Otherwise adding will be terminated");
-                Console.WriteLine("In case of skipping priority setting priority will be set to 1");
-                Console.WriteLine("Enter task priority: ");
-                var input = Console.ReadLine();
-                if (input != null)
-                {
-                    if (int.TryParse(input, out var parsed))
-                    {
-                        task_priority = parsed;
-                        break;
-                    }
-                    break;
-                }
-                if (input == null)
-                {
-                    break;
-                }
-                Console.WriteLine("Wrong input");
-                Console.ReadLine();
-            }
-            while (true);
+                "Task priority has values constraint",
+                "Only values between 1 and 5 are allowed",
+                "Otherwise adding will be terminated",
+                "In case of skipping priority setting priority will be set to 1"
+            }, true)?.ToInt() ?? 0;
 
-            string task_comment = string.Empty;
-            do
-            {
-                Console.Clear();
-                Console.WriteLine("Enter task comment: ");
-                var input = Console.ReadLine();
-                if (input != null)
-                {
-                    task_comment = input;
-                    break;
-                }
-                if (input == null)
-                {
-                    break;
-                }
-            }
-            while (true);
+            string task_comment = Dialogs.InsertDialog("task_comment", isSkippable : true)?.ToString();
 
             var cmdText = $@"
             insert into trello (
@@ -162,22 +80,10 @@ namespace CourseWork.CRUD_on_Tasks
             {(task_comment == string.Empty ? "" : $", '{task_comment}'")}
             )";
 
-            try
-            {
-                Console.Clear();
-                var cmd = DBconnection.CreateCommand(cmdText).ExecuteNonQuery();
-                Console.WriteLine("Added successfully");
-                Console.ReadLine();
-            }
-            catch
-            {
-                Console.Clear();
-                Console.WriteLine("Adding terminated");
-                Console.ReadLine();
-            }
+            DBoperations.ExecuteOperation(operationsType.Insert, DBconnection, cmdText);
         }
 
-        public static void UpdateTask(NpgsqlDataSource DBconnection, string username, Dictionary<string, object> SetValuesPairs, Dictionary<string, object> WhereValuesPairs)
+        public void UpdateTask(NpgsqlDataSource DBconnection, string username, Dictionary<string, object> SetValuesPairs, Dictionary<string, object> WhereValuesPairs)
         {
             var setValues = "set";
             if (SetValuesPairs.Count > 0)
@@ -211,22 +117,10 @@ namespace CourseWork.CRUD_on_Tasks
             {setValues}
             {whereCondition}";
 
-            try
-            {
-                Console.Clear();
-                var cmd = DBconnection.CreateCommand(cmdText).ExecuteNonQuery();
-                Console.WriteLine("Updated successfully");
-                Console.ReadLine();
-            }
-            catch
-            {
-                Console.Clear();
-                Console.WriteLine("Update terminated");
-                Console.ReadLine();
-            }
+            DBoperations.ExecuteOperation(operationsType.Update, DBconnection, cmdText);
         }
 
-        public static void DeleteTask(NpgsqlDataSource DBconnection, string username, Dictionary<string, object> WhereValuesPairs)
+        public void DeleteTask(NpgsqlDataSource DBconnection, string username, Dictionary<string, object> WhereValuesPairs)
         {
             
             if (WhereValuesPairs.Count < 1)
@@ -251,19 +145,7 @@ namespace CourseWork.CRUD_on_Tasks
             delete from trello
             {whereCondition}";
 
-            try
-            {
-                Console.Clear();
-                var cmd = DBconnection.CreateCommand(cmdText).ExecuteNonQuery();
-                Console.WriteLine("Deleted successfully");
-                Console.ReadLine();
-            }
-            catch
-            {
-                Console.Clear();
-                Console.WriteLine("Delete terminated");
-                Console.ReadLine();
-            }
+            DBoperations.ExecuteOperation(operationsType.Delete, DBconnection, cmdText);
         }
     }
 }
